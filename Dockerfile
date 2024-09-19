@@ -20,7 +20,7 @@ WORKDIR /app/TensorRT-LLM/examples/llm-api
 RUN pip3 install -r requirements.txt
 
 # Install additional dependencies for the serverless worker
-RUN pip3 install runpod
+RUN pip3 install --upgrade runpod transformers
 
 # Set the working directory to /app
 WORKDIR /app
