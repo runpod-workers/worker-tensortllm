@@ -1,29 +1,32 @@
-# Base image -> https://github.com/runpod/containers/blob/main/official-templates/base/Dockerfile
-# DockerHub -> https://hub.docker.com/r/runpod/base/tags
-FROM runpod/base:0.4.0-cuda11.8.0
+# Start with NVIDIA CUDA base image
+FROM nvidia/cuda:12.1.0-base-ubuntu22.04
 
-# The base image comes with many system dependencies pre-installed to help you get started quickly.
-# Please refer to the base image's Dockerfile for more information before adding additional dependencies.
-# IMPORTANT: The base image overrides the default huggingface cache location.
+# Avoid prompts from apt
+ENV DEBIAN_FRONTEND=noninteractive
 
+# Install system dependencies and Python
+RUN apt-get update -y && \
+    apt-get install -y python3-pip python3-dev git libopenmpi-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# --- Optional: System dependencies ---
-# COPY builder/setup.sh /setup.sh
-# RUN /bin/bash /setup.sh && \
-#     rm /setup.sh
+# Clone TensorRT-LLM repository
+RUN git clone https://github.com/NVIDIA/TensorRT-LLM.git /app/TensorRT-LLM
 
+# Set working directory
+WORKDIR /app/TensorRT-LLM/examples/llm-api
 
-# Python dependencies
-COPY builder/requirements.txt /requirements.txt
-RUN python3.11 -m pip install --upgrade pip && \
-    python3.11 -m pip install --upgrade -r /requirements.txt --no-cache-dir && \
-    rm /requirements.txt
+# Install Python dependencies
+RUN pip3 install -r requirements.txt
 
-# NOTE: The base image comes with multiple Python versions pre-installed.
-#       It is reccommended to specify the version of Python when running your code.
+# Install additional dependencies for the serverless worker
+RUN pip3 install --upgrade runpod transformers
 
+# Set the working directory to /app
+WORKDIR /app
 
-# Add src files (Worker Template)
-ADD src .
+# Copy the src directory containing handler.py
+COPY src /app/src
 
-CMD python3.11 -u /handler.py
+# Command to run the serverless worker
+CMD ["python3", "/app/src/handler.py"]
