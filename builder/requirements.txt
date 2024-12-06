@@ -6,3 +6,12 @@
 # To learn more, see https://pip.pypa.io/en/stable/reference/requirements-file-format/
 
 runpod~=1.7.0
+tensorrt_llm
+transformers
+fastapi
+uvicorn
+pydantic
+numpy
+torch
+huggingface-hub
+python-dotenv
