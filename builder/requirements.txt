@@ -5,8 +5,8 @@
 # git+https://github.com/runpod/runpod-python.git
 # To learn more, see https://pip.pypa.io/en/stable/reference/requirements-file-format/
 
-runpod~=1.7.0
-tensorrt_llm
+runpod~=1.7.13
+# tensorrt_llm is installed directly from the cloned repository
 transformers
 fastapi
 uvicorn
