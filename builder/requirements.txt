@@ -5,7 +5,7 @@
 # git+https://github.com/runpod/runpod-python.git
 # To learn more, see https://pip.pypa.io/en/stable/reference/requirements-file-format/
 
-runpod~=1.7.0
+runpod~=1.7.13
 tensorrt_llm
 transformers
 fastapi
@@ -15,3 +15,4 @@ numpy
 torch
 huggingface-hub
 python-dotenv
+packaging>=20.0

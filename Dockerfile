@@ -1,5 +1,5 @@
-# Start with NVIDIA CUDA base image
-FROM nvidia/cuda:12.1.0-base-ubuntu22.04
+# Start with NVIDIA CUDA development image (includes nvcc)
+FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
@@ -14,19 +14,26 @@ RUN apt-get update -y && \
 RUN git clone https://github.com/NVIDIA/TensorRT-LLM.git /app/TensorRT-LLM
 
 # Set working directory
-WORKDIR /app/TensorRT-LLM/examples/llm-api
+WORKDIR /app
+
+# Copy requirements.txt from builder directory
+COPY builder/requirements.txt /app/requirements.txt
 
 # Install Python dependencies
 RUN pip3 install -r requirements.txt
 
-# Install additional dependencies for the serverless worker
-RUN pip3 install --upgrade runpod transformers
+# Install additional dependencies for TensorRT-LLM
+WORKDIR /app/TensorRT-LLM/examples/llm-api
+RUN if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
 
-# Set the working directory to /app
+# Set the working directory back to /app
 WORKDIR /app
 
 # Copy the src directory containing handler.py
 COPY src /app/src
+
+# Copy test_input.json
+COPY test_input.json /app/
 
 # Command to run the serverless worker
 CMD ["python3", "/app/src/handler.py"]
