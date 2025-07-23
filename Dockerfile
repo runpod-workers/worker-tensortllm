@@ -10,23 +10,28 @@ RUN apt-get update -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone TensorRT-LLM repository
+# Set working directory
+WORKDIR /app
+
+# Clone TensorRT-LLM repository first
 RUN git clone https://github.com/NVIDIA/TensorRT-LLM.git /app/TensorRT-LLM
 
-# Set working directory
-WORKDIR /app/TensorRT-LLM/examples/llm-api
+# Copy requirements file
+COPY builder/requirements.txt /app/requirements.txt
 
 # Install Python dependencies
-RUN pip3 install -r requirements.txt
+# First install basic dependencies without tensorrt_llm
+RUN pip3 install --no-cache-dir runpod~=1.7.13 transformers fastapi uvicorn pydantic numpy torch huggingface-hub python-dotenv
 
-# Install additional dependencies for the serverless worker
-RUN pip3 install --upgrade runpod transformers
-
-# Set the working directory to /app
-WORKDIR /app
+# Install TensorRT-LLM from the cloned repository
+RUN cd /app/TensorRT-LLM && \
+    pip3 install -e .
 
 # Copy the src directory containing handler.py
 COPY src /app/src
+
+# Copy test_input.json
+COPY test_input.json /app/
 
 # Command to run the serverless worker
 CMD ["python3", "/app/src/handler.py"]
